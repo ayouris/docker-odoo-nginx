@@ -1,6 +1,10 @@
 # HISTORY
 
 ## Unreleased
+
+* Add optional `NGX_FS_X_SENDFILE` env var to enable X-Accel-Redirect proxying
+  for S3-backed Odoo attachments (OCA `fs_attachment_s3`). Disabled by default.
+
 ## 1.10.1
 
 * Increase ressources and limit

@@ -80,3 +80,24 @@ vrenaville:$apr1$lDdea9Jt$DAJQG0W1s4JEuuVQQxiur.
 
 If you want all cookies to be have the Secure attribute, then you can set the
 environment variable NGX_ODOO_SECURE_COOKIES to 1.
+
+### S3 X-Accel-Redirect (fs_attachment_s3)
+
+When Odoo stores attachments on S3 using OCA's `fs_attachment_s3` module and
+`use_x_sendfile_to_serve_internal_url` is enabled, Odoo responds with an
+`X-Accel-Redirect` header containing a presigned S3 URL. nginx intercepts this
+header and proxies the file directly from S3, offloading file transfer from
+Odoo workers.
+
+This feature is **disabled by default**. To enable it, set the environment
+variable `NGX_FS_X_SENDFILE` to any non-empty value:
+
+```yaml
+environment:
+  NGX_FS_X_SENDFILE: "1"
+```
+
+When enabled, nginx adds an internal `location ~ ^/fs_x_sendfile/` block that
+parses the presigned URL from the `X-Accel-Redirect` header and proxies the
+request to the S3 endpoint. nginx never has access to S3 credentials — it only
+proxies URLs that Odoo has already signed.
