@@ -205,5 +205,30 @@ http {
 
       proxy_pass http://{{ $odoo_host }}:8069;
     }
+
+   {{ if getenv "NGX_FS_X_SENDFILE" }}
+    # X-Accel-Redirect for S3-backed attachments (fs_attachment_s3).
+    # When Odoo's use_x_sendfile_to_serve_internal_url is enabled,
+    # Odoo generates a presigned S3 URL and nginx proxies it directly,
+    # offloading file transfer from Odoo workers.
+    # Enabled by setting NGX_FS_X_SENDFILE env var to any non-empty value.
+    resolver 127.0.0.11 valid=30s ipv6=off;
+    location ~ ^/fs_x_sendfile/(.*?)/(.*?)/(.*) {
+        internal;
+
+        set $fs_scheme $1;
+        set $fs_host $2;
+        set $fs_path $3;
+        set $fs_url $fs_scheme://$fs_host/$fs_path;
+
+        proxy_pass $fs_url$is_args$args;
+        proxy_set_header Host $fs_host;
+        proxy_ssl_server_name on;
+
+        proxy_connect_timeout 10s;
+        proxy_read_timeout 300s;
+        proxy_send_timeout 60s;
+    }
+   {{ end }}
   }
 }

@@ -15,5 +15,8 @@ ENTRYPOINT ["/docker-entrypoint.sh"]
 ENV NGX_ODOO_HOST=odoo
 ENV NGX_ODOO_LONGPOLLING_PORT=8072
 ENV NGX_CACHE_SIZE=10m
+# When set to a non-empty value, enables the fs_x_sendfile location block
+# for X-Accel-Redirect proxying to S3-backed attachments (fs_attachment_s3).
+ENV NGX_FS_X_SENDFILE=
 
 CMD ["nginx", "-g", "daemon off;"]
